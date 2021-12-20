@@ -5,6 +5,7 @@ import com.raven.event.EventItem;
 import com.raven.model.ModelItem;
 import com.raven.swing.ScrollBar;
 import java.awt.Component;
+import java.awt.Point;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.text.DecimalFormat;
@@ -55,6 +56,11 @@ public class FormHome extends javax.swing.JPanel {
         lbBrand.setText(data.getBrandName());
         DecimalFormat df = new DecimalFormat("$#,##0.00");
         lbPrice.setText(df.format(data.getPrice()));
+    }
+
+    public Point getPanelItemLocation() {
+        Point p = scroll.getLocation();
+        return new Point(p.x, p.y - scroll.getViewport().getViewPosition().y);
     }
 
     @SuppressWarnings("unchecked")

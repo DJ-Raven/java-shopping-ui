@@ -6,16 +6,36 @@ import com.raven.model.ModelItem;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.Point;
 import javax.swing.ImageIcon;
+import org.jdesktop.animation.timing.Animator;
+import org.jdesktop.animation.timing.TimingTargetAdapter;
+import org.jdesktop.animation.timing.interpolation.PropertySetter;
 
 public class Main extends javax.swing.JFrame {
 
     private FormHome home;
+    private Animator animator;
+    private Point animatePoint;
+    private ModelItem itemSelected;
 
     public Main() {
         initComponents();
         setBackground(new Color(0, 0, 0, 0));
         init();
+        //  Animator start form animatePoint to TagetPoint
+        animator = PropertySetter.createAnimator(500, mainPanel, "imageLocation", animatePoint, mainPanel.getTargetLocation());
+        animator.addTarget(new PropertySetter(mainPanel, "imageSize", new Dimension(180, 120), mainPanel.getTargetSize()));
+        animator.addTarget(new TimingTargetAdapter() {
+            @Override
+            public void end() {
+                mainPanel.setImageOld(null);
+            }
+        });
+        animator.setResolution(0);
+        animator.setAcceleration(.5f);
+        animator.setDeceleration(.5f);
     }
 
     private void init() {
@@ -30,8 +50,22 @@ public class Main extends javax.swing.JFrame {
         home.setEvent(new EventItem() {
             @Override
             public void itemClick(Component com, ModelItem item) {
-                home.setSelected(com);
-                home.showItem(item);
+                if (itemSelected != null) {
+                    mainPanel.setImageOld(itemSelected.getImage());
+                }
+                if (itemSelected != item) {
+                    if (!animator.isRunning()) {
+                        itemSelected = item;
+                        animatePoint = getLocationOf(com);
+                        mainPanel.setImage(item.getImage());
+                        mainPanel.setImageLocation(animatePoint);
+                        mainPanel.setImageSize(new Dimension(180, 120));
+                        mainPanel.repaint();
+                        home.setSelected(com);
+                        home.showItem(item);
+                        animator.start();
+                    }
+                }
             }
         });
         int ID = 1;
@@ -43,6 +77,17 @@ public class Main extends javax.swing.JFrame {
             home.addItem(new ModelItem(ID++, "Adidas", "NMD City Stock 2", 120, "Adidas", new ImageIcon(getClass().getResource("/com/raven/image/img5.png"))));
             home.addItem(new ModelItem(ID++, "4DFWD PULSE", "This product is excluded from all promotional discounts and offers.", 160, "Adidas", new ImageIcon(getClass().getResource("/com/raven/image/img6.png"))));
         }
+    }
+
+    private Point getLocationOf(Component com) {
+        Point p = home.getPanelItemLocation();
+        int x = p.x;
+        int y = p.y;
+        int itemX = com.getX();
+        int itemY = com.getY();
+        int left = 10;
+        int top = 35;
+        return new Point(x + itemX + left, y + itemY + top);
     }
 
     @SuppressWarnings("unchecked")
